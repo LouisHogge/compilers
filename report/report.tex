@@ -1,0 +1,158 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[a4paper, total={6.45in, 9in}]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{svg}
+\usepackage{float}
+\usepackage{verbatim}
+\setcounter{tocdepth}{2}
+\usepackage{listings}
+\usepackage{gensymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath} % for the equation* environment
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\setcounter{secnumdepth}{5}
+\renewcommand{\thesubsubsection}{\alph{subsubsection}}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\newcommand{\Int}{\int\limits}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage{pgfplots}
+
+\usepgfplotslibrary{fillbetween}
+
+\pgfplotsset{compat=1.18}
+
+\usepackage{wrapfig}
+\usepackage{dsfont}
+\usepackage{amssymb}
+
+\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
+
+
+\begin{document}
+	
+	\begin{titlepage}
+		
+		\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+		
+		\center % Center everything on the page
+		
+		%----------------------------------------------------------------------------------------
+		%	HEADING SECTIONS
+		%----------------------------------------------------------------------------------------
+		
+		\textsc{\LARGE Université de Liège}\\[1.5cm] % Name of your university/college
+		\includegraphics[scale=1]{uliege.jpg}\\[1cm]
+		\textsc{\Large [INFO0085] Compilers}\\[0.5cm] % Major heading such as course name
+		
+		%----------------------------------------------------------------------------------------
+		%	TITLE SECTION
+		%----------------------------------------------------------------------------------------
+		
+		\HRule \\[0.4cm]
+		{ \huge \bfseries Compilers Project}\\[0.4cm] % Title of your document
+		\HRule \\[1.5cm]
+		
+		%----------------------------------------------------------------------------------------
+		%	AUTHOR SECTION
+		%----------------------------------------------------------------------------------------
+		
+		\Large \emph{Authors:}\\
+		\textsc{La Rocca} Lionel (s161284) \& \textsc{Hogge} Louis (s192814)\\[3cm]% Your name
+		
+		%----------------------------------------------------------------------------------------
+		%	DATE SECTION
+		%----------------------------------------------------------------------------------------
+		
+		{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+		
+		
+		\vfill % Fill the rest of the page with whitespace
+
+	\end{titlepage}
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\par This report provides a broad overview of the implementation of a compiler using the Flex and Bison tools in C++. We discussed first the tools used, then the organization of the compiler and our implementation choices.
+
+\section{Tools Used}
+
+For the compiler, the following tools are used :
+\begin{itemize}
+
+    \item[$\bullet$] Flex : A lexical analyzer generator that generates code for scanning input streams.
+
+    \item[$\bullet$] Bison: A parser generator that generates code for syntax analysis and parser construction.
+
+    \item[$\bullet$] C++: The programming language used for the compiler.
+\end{itemize}
+
+\section{Organization of the compiler}
+\subsection{Lexer}
+The lexer is defined in \textbf{lexer.lex}, for the lexer and parser we used the example provided. 
+
+We added a particular token: \textit{EOFERROR} to return an error and stop the program when EOF. 
+
+\subsection{Parser}
+
+For the parser, the AST is defined in \textbf{ast.hpp}. We used a \textit{visitor} pattern. All the nodes are created in \textbf{parser.y}.
+
+For the nodes:
+
+\begin{enumerate}
+    \item We have first defined an \textbf{AstNode} that extended by \textbf{ProgramNode} the root of the AST. It is also extended by 
+    \textbf{TypeNode}, \textbf{FormalNode}, \textbf{FormalsNode} \textbf{ExprNode}, \textbf{BlockNode}, \textbf{ArgsNode}, \textbf{FieldNode},\textbf{MethodNode}, \textbf{ClassBodyNode} and \textbf{ClassNode}.
+    \item For the expression node like the \textit{If Then} or \textit{While do}, they extends the \textbf{ExprNode}.
+\end{enumerate}
+We try to respect the naming and hierarchy of the VSOP manual when defining our nodes.\\
+
+To print the AST, the evaluation of the nodes start from the \textbf{ProgramNode} and go through all the AST.\\
+
+\par There is also a boolean \textit{checkMode}, when the Checker mode is selected, is used to print the type of the corresponding expression.
+
+
+\subsection{Checker}
+
+Concerning the checker part, the code is divided by pass, each pass is defined in the corresponding class.
+
+\begin{enumerate}
+    \item \textit{FirstPass}: The first pass go over the AST, considers class declarations (ignoring their fields and methods), records which classes are defined, and what their parents are. Then checks for cycles.
+    \item \textit{SecondPass}: The second pass, go over the AST to report any use of an undefined class and to record the types of methods and fields for each class, without inspecting their body or initializer.
+    \item \textit{ThirdPass}: The third Pass pass reports any overridden methods or fields, check main method, report any undefined types and record the types of formals for each class.
+    \item \textit{FourthPass}: This pass performs type checking.
+\end{enumerate}
+
+\subsection{LLVM}
+
+The \textit{CodeGeneration} class is responsible for translating the abstract syntax tree (AST) of a given program into LLVM IR, an intermediate representation that can be further compiled to executable machine code.\\
+
+A sequence of visitor methods make up the majority of the class. The LLVM IR code for a particular section of the program is created whenever a node is visited, using data from both that node and previously visited nodes.
+
+\section{Limitation of the compiler}
+% The compiler did not pass all the tests for the semantic part. There is still some problem like :
+
+% \begin{enumerate}
+%     \item Errors are detected in \textit{Let} when the input is valid. The error is because for some node, the corresponding type is not well set.
+%     \item When there is a type \textit{Object} in the input, the type is not set by our implementation. Resulting in printing a type \textit{unit} instead of \textit{Object}.
+%     \item Our implementation has a problem to find ancestor classes when it need to find where a variable has been declared.
+% \end{enumerate}
+
+% \par Because of the six passes, some part are redundant. The compiler could be more efficient if we redesigned the pass and reduce them.\\
+
+When an invalid character is detected in the Lexer, an error is printed as well as the tokens.\\
+
+We didn't manage to finish the code generation part in time. The LLVM structure is well filled and almost hits the mark but the implementation of the visitors is in progress.
+
+\section{Time estimation}
+We estimate our work time to be a little over 80 hours each. The first part has taken less time comparing to the three others.
+
+\end{document}

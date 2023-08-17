@@ -1,0 +1,7 @@
+class A {
+    getSomeInt() : int32 { 42 }
+}
+class MyClass {
+    myMethod(a : A) : int32 { a.getSomeInt() }
+}
+class Main { main() : int32 { 0 } }

@@ -1,0 +1,7 @@
+class Main {
+    main() : int32 {
+        print("Testing I/O methods from Object\n");
+        print("Enter a boolean\n");
+        0
+    }
+}

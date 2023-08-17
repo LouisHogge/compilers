@@ -1,0 +1,6 @@
+class Main { 
+    main() : int32 {
+        let b : bool <- inputBool() in printBool(b).print("\n");
+        0
+    } 
+}

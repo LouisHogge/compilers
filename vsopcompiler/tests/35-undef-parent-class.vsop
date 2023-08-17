@@ -1,0 +1,5 @@
+class MyClass extends UndefinedClass {
+}
+class Main {
+    main() : int32 { 0 }
+}

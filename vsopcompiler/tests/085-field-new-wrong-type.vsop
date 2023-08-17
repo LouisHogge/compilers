@@ -1,0 +1,6 @@
+class A { }
+class B extends A { }
+class MyClass {
+    myField : B <- new A;
+}
+class Main { main() : int32 { 0 } }

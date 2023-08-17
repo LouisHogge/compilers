@@ -1,0 +1,4 @@
+class MyClass {
+    myMethod(i : int32, unused : string) : int32 { let x : int32 in x <- i }
+}
+class Main { main() : int32 { 0 } }

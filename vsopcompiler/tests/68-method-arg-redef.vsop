@@ -1,0 +1,4 @@
+class MyClass extends Object {
+    myMethod(i : int32, b : bool, i : int32) : bool { b }
+}
+class Main { main() : int32 { 0 } }
